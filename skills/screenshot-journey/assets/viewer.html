@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Development journey</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0e0f13;
+        --panel: #181a21;
+        --line: #2a2d38;
+        --ink: #e7e9ee;
+        --dim: #9aa0ad;
+        --accent: #5b9dff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      header {
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+      header .count { color: var(--dim); font-variant-numeric: tabular-nums; }
+      main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        min-height: 0;
+      }
+      #stage {
+        max-width: 100%;
+        max-height: 72vh;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #000;
+        display: block;
+      }
+      #empty { color: var(--dim); text-align: center; }
+      footer {
+        border-top: 1px solid var(--line);
+        background: var(--panel);
+        padding: 12px 18px 16px;
+      }
+      .caption { margin: 0 0 4px; font-size: 15px; }
+      .meta {
+        color: var(--dim);
+        font-size: 12px;
+        margin-bottom: 10px;
+        font-variant-numeric: tabular-nums;
+      }
+      .badge {
+        background: #23262f;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      button {
+        background: #23262f;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font: inherit;
+      }
+      button:hover { border-color: var(--accent); }
+      button:disabled { opacity: 0.4; cursor: default; }
+      #scrubber { flex: 1; min-width: 140px; accent-color: var(--accent); }
+      label.speed { color: var(--dim); display: flex; align-items: center; gap: 6px; }
+      select { background: #23262f; color: var(--ink); border: 1px solid var(--line); border-radius: 5px; padding: 5px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Development journey</h1>
+      <span class="count" id="count"></span>
+    </header>
+
+    <main>
+      <img id="stage" alt="" hidden />
+      <p id="empty" hidden>No captures yet. Run a capture, then rebuild the viewer.</p>
+    </main>
+
+    <footer>
+      <p class="caption" id="caption"></p>
+      <p class="meta" id="meta"></p>
+      <div class="controls">
+        <button id="prev">&larr; Prev</button>
+        <button id="play">&#9654; Play</button>
+        <button id="next">Next &rarr;</button>
+        <input type="range" id="scrubber" min="0" value="0" />
+        <label class="speed">
+          Speed
+          <select id="speed">
+            <option value="2000">0.5&times;</option>
+            <option value="1000" selected>1&times;</option>
+            <option value="500">2&times;</option>
+            <option value="250">4&times;</option>
+          </select>
+        </label>
+      </div>
+    </footer>
+
+    <script id="journey-data" type="application/json">/*__JOURNEY_DATA__*/</script>
+    <script>
+      const entries = JSON.parse(
+        document.getElementById("journey-data").textContent || "[]",
+      );
+      const $ = (id) => document.getElementById(id);
+      const stage = $("stage");
+      const empty = $("empty");
+      const scrubber = $("scrubber");
+
+      let index = 0;
+      let timer = null;
+
+      function render() {
+        if (entries.length === 0) {
+          empty.hidden = false;
+          $("count").textContent = "";
+          for (const id of ["prev", "next", "play", "scrubber", "speed"]) {
+            $(id).disabled = true;
+          }
+          return;
+        }
+        const e = entries[index];
+        stage.hidden = false;
+        stage.src = e.file;
+        stage.alt = e.label;
+        $("count").textContent = index + 1 + " / " + entries.length;
+        $("caption").textContent = e.caption;
+        const bits = [];
+        if (e.sha) bits.push('<span class="badge">' + e.sha + "</span>");
+        if (e.branch) bits.push(e.branch);
+        if (e.timestamp) bits.push(new Date(e.timestamp).toLocaleString());
+        bits.push(e.viewport.width + "&times;" + e.viewport.height);
+        $("meta").innerHTML = bits.join(" &middot; ");
+        scrubber.value = String(index);
+        $("prev").disabled = index === 0;
+        $("next").disabled = index === entries.length - 1;
+      }
+
+      function go(to) {
+        index = Math.max(0, Math.min(entries.length - 1, to));
+        render();
+      }
+
+      function stop() {
+        clearInterval(timer);
+        timer = null;
+        $("play").innerHTML = "&#9654; Play";
+      }
+
+      function play() {
+        if (timer) return stop();
+        $("play").innerHTML = "&#10073;&#10073; Pause";
+        timer = setInterval(() => {
+          if (index >= entries.length - 1) return stop();
+          go(index + 1);
+        }, Number($("speed").value));
+      }
+
+      $("prev").onclick = () => {
+        stop();
+        go(index - 1);
+      };
+      $("next").onclick = () => {
+        stop();
+        go(index + 1);
+      };
+      $("play").onclick = play;
+      scrubber.oninput = () => {
+        stop();
+        go(Number(scrubber.value));
+      };
+      document.addEventListener("keydown", (ev) => {
+        if (ev.key === "ArrowLeft") {
+          stop();
+          go(index - 1);
+        } else if (ev.key === "ArrowRight") {
+          stop();
+          go(index + 1);
+        } else if (ev.key === " ") {
+          ev.preventDefault();
+          play();
+        }
+      });
+
+      scrubber.max = String(Math.max(0, entries.length - 1));
+      render();
+    </script>
+  </body>
+</html>
