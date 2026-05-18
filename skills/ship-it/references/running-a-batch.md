@@ -33,17 +33,20 @@ Process issues strictly sequentially, in dependency order. For each issue:
    issue, `upsert-comment <issue> handoff <file>` with that context before
    dispatching.
 3. **Dispatch the implementer** subagent from `templates/implementer-prompt.md`
-   (see Subagent contract). Choose the model by issue complexity.
+   (see Subagent contract). Choose the model by issue complexity. Before
+   dispatching, record the current branch HEAD SHA: once the implementer has
+   committed, this issue's review range `SHA_RANGE` is `<recorded-SHA>..HEAD`.
 4. **Handle the status** the implementer reports (see Subagent contract).
 5. **Stage 1 — spec compliance.** Dispatch a subagent from
    `templates/spec-compliance-prompt.md`. On `FAIL`, go to the fix loop.
 6. **Stage 2 — code quality.** Only after stage 1 `PASS`: dispatch a subagent
    from `templates/code-quality-prompt.md`, which runs the `reviewer` skill.
 7. **Fix loop.** If stage 1 failed, or stage 2 returned Critical/Important
-   findings: dispatch a fix subagent from `templates/fix-prompt.md`, then
-   re-run stage 1 and stage 2. Repeat until both are clean or the loop fails
-   to converge (no progress between iterations) — a non-converging loop is
-   handled like `BLOCKED`.
+   findings: dispatch a fix subagent from `templates/fix-prompt.md`
+   (substitute `{{FIX_SKILL}}` with the `implementer` role-binding skill name,
+   since the `fix` role defaults to it), then re-run stage 1 and stage 2.
+   Repeat until both are clean or the loop fails to converge (no progress
+   between iterations) — a non-converging loop is handled like `BLOCKED`.
 8. **post-issue-complete hook.** Fire it (see Hooks).
 9. **Record.** `upsert-comment <issue> outcome <file>` with the commit SHA(s),
    what was built, discoveries, and any deferred Suggestion-level findings.

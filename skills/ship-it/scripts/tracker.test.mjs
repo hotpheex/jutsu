@@ -47,6 +47,11 @@ test("extractParentRef returns null when there is no Parent section", () => {
   assert.equal(extractParentRef("## What to build\n\nstuff"), null);
 });
 
+test("extractParentRef skips a markdown #anchor before the issue reference", () => {
+  const body = "## Parent\n\nSee [notes](#background)\n\n#18\n\n## What to build";
+  assert.equal(extractParentRef(body), 18);
+});
+
 test("parseBlockedBy collects every issue reference in the section", () => {
   const body = "## Blocked by\n\n- #12\n- #13\n\n## Parent\n\n#18";
   assert.deepEqual(parseBlockedBy(body), [12, 13]);

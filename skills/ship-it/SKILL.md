@@ -82,7 +82,10 @@ digraph per_issue {
 ```
 
 A non-converging fix loop is treated like `BLOCKED`: it routes to
-escalate-retry. Skipping an issue cascade-skips its dependents.
+escalate-retry. Skipping an issue cascade-skips its dependents. The flowchart
+shows the `DONE` and `BLOCKED` paths only; `DONE_WITH_CONCERNS` and
+`NEEDS_CONTEXT` are handled per the Subagent contract in
+`references/running-a-batch.md`.
 
 **REQUIRED:** read `references/running-a-batch.md` for the full per-phase
 procedure, the subagent contract, failure handling, and the comment protocol

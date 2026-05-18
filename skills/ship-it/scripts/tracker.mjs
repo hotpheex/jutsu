@@ -51,7 +51,9 @@ export function commentRestId(url) {
  * or null when there is no parent reference.
  */
 export function extractParentRef(body) {
-  const m = (body || "").match(/##\s*Parent\s*\n+[^#]*?#(\d+)/i);
+  const section = (body || "").match(/##\s*Parent\s*\n+([\s\S]*?)(?=\n##|$)/i);
+  if (!section) return null;
+  const m = section[1].match(/#(\d+)/);
   return m ? Number(m[1]) : null;
 }
 
