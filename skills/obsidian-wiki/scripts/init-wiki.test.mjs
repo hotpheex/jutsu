@@ -51,6 +51,38 @@ test("substitutes {{PROJECT}} placeholders", () => {
   assert.ok(!log.includes("{{PROJECT}}"));
 });
 
+test("leaves no placeholder token in any generated file or the agent block", () => {
+  const repo = freshRepo();
+  const { wikiPath, agentBlock } = initWiki({ repoRoot: repo, project: "demo" });
+  for (const rel of [
+    "wiki/meta/conventions.md",
+    "wiki/meta/update-rule.md",
+    "wiki/index.md",
+    "wiki/log.md",
+  ]) {
+    const body = readFileSync(join(wikiPath, rel), "utf8");
+    assert.ok(!body.includes("{{"), `${rel} still contains a placeholder`);
+  }
+  // The agent block is the artifact a human pastes into CLAUDE.md — an
+  // unresolved {{WIKI_PATH}} there is the most visible possible failure.
+  assert.ok(!agentBlock.includes("{{"), "agent block still contains a placeholder");
+  assert.ok(agentBlock.includes(wikiPath), "agent block missing the resolved wiki path");
+
+  // {{DATE}} and {{REPO_PATH}} both resolve inside conventions.md.
+  const conventions = readFileSync(
+    join(wikiPath, "wiki/meta/conventions.md"),
+    "utf8",
+  );
+  assert.ok(
+    conventions.includes(new Date().toISOString().slice(0, 10)),
+    "conventions.md missing the resolved {{DATE}}",
+  );
+  assert.ok(
+    conventions.includes(repo),
+    "conventions.md missing the resolved {{REPO_PATH}}",
+  );
+});
+
 test("is idempotent — re-running skips existing files and never overwrites", () => {
   const repo = freshRepo();
   const first = initWiki({ repoRoot: repo, project: "demo" });
