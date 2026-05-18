@@ -244,3 +244,32 @@ test("createPr opens a PR and returns the trimmed URL", () => {
   assert.ok(call.includes("--head") && call.includes("feat-branch"));
   assert.ok(call.includes("--base") && call.includes("main"));
 });
+
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { run } from "./tracker.mjs";
+
+const SCRIPT = fileURLToPath(new URL("./tracker.mjs", import.meta.url));
+
+test("run throws a clear error for an unknown operation", () => {
+  assert.throws(() => run(["frobnicate"]), /unknown operation: frobnicate/);
+});
+
+test("run throws when no operation is given", () => {
+  assert.throws(() => run([]), /unknown operation/);
+});
+
+test("the CLI exits non-zero and explains an unknown operation", () => {
+  assert.throws(
+    () =>
+      execFileSync(process.execPath, [SCRIPT, "frobnicate"], {
+        encoding: "utf8",
+        stdio: "pipe",
+      }),
+    (err) => {
+      assert.equal(err.status, 1);
+      assert.match(err.stderr, /unknown operation/);
+      return true;
+    },
+  );
+});

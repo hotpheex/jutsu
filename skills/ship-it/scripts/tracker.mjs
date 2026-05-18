@@ -202,3 +202,47 @@ export function createPr(head, base, title, body, { runGh = realGh } = {}) {
     "--title", title, "--body", body,
   ]).trim();
 }
+
+// ---------------------------------------------------------------------------
+// CLI
+// ---------------------------------------------------------------------------
+
+const OPERATIONS = {
+  "list-children": (a) => JSON.stringify(listChildren(a[0]), null, 2),
+  "get-issue": (a) => JSON.stringify(getIssue(a[0]), null, 2),
+  "upsert-comment": (a) =>
+    upsertComment(a[0], a[1], readFileSync(a[2], "utf8")),
+  "read-comment": (a) => readComment(a[0], a[1]),
+  "add-label": (a) => {
+    addLabel(a[0], a[1]);
+    return "ok";
+  },
+  "create-pr": (a) => createPr(a[0], a[1], a[2], readFileSync(a[3], "utf8")),
+};
+
+/** Dispatch one CLI invocation. Returns the string to print. */
+export function run(argv) {
+  const [op, ...rest] = argv;
+  const handler = OPERATIONS[op];
+  if (!handler) {
+    throw new Error(
+      `unknown operation: ${op || "(none)"} — ` +
+        `expected one of: ${Object.keys(OPERATIONS).join(", ")}`,
+    );
+  }
+  return handler(rest);
+}
+
+function main() {
+  try {
+    const out = run(process.argv.slice(2));
+    if (out) console.log(out);
+  } catch (err) {
+    console.error(`tracker: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
+  main();
+}
