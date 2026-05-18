@@ -84,6 +84,9 @@ Phase 3 over whatever landed, so partial work is captured and reviewable.
 
 ## Phase 4 — Notify
 
+Fire the `run-complete` hook. `discord-notify` is the sole binding; the
+steps below are its inline execution.
+
 1. If `discord-notify` is `off`, skip and report the PR URL.
 2. Read `SHIP_IT_DISCORD_WEBHOOK_URL`. If unset or empty, skip silently and
    report the PR URL.
