@@ -36,6 +36,7 @@ Optional config (sensible defaults):
 | role-binding overrides | see registry | swap the skill filling a role |
 | retry budget | 1 | escalate-retry attempts per issue before skip |
 | circuit-breaker threshold | 1/3 of the batch | halt the run if failures exceed it |
+| `discord-notify` | `on` | Post run-complete summary to Discord (requires `SHIP_IT_DISCORD_WEBHOOK_URL`) |
 
 ## The five phases
 
