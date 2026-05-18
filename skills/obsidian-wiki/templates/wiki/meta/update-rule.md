@@ -1,7 +1,7 @@
 ---
 description: Decision rule for whether a session's output belongs in the wiki, and the end-of-session checklist.
 tags: [meta, workflow]
-last_updated: 2026-05-18
+last_updated: {{DATE}}
 sources: []
 ---
 
