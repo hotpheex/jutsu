@@ -100,9 +100,11 @@ Phase 3 over whatever landed, so partial work is captured and reviewable.
    Substitute `{done}`, `{skipped}`, `{failed}` with the final run counts and
    `{number}` / `{url}` with the PR number and full URL.
 
-5. If the HTTP status is not 2xx, or `curl` exits non-zero, log a one-line
-   warning (`discord notify failed: <status>`). Never abort the run — the PR
-   is already raised.
+5. The command prints only the HTTP status code to stdout. If the status is
+   not 2xx, log `discord notify failed: HTTP <status>`. If `curl` exits
+   non-zero (transport failure — network/DNS/TLS), `%{http_code}` outputs
+   `000`; log `discord notify failed: transport error`. Never abort the run —
+   the PR is already raised.
 6. Report the PR URL to the user.
 
 ## Subagent contract
