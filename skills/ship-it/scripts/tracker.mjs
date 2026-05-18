@@ -106,3 +106,99 @@ export function renderRunStatus(items) {
     rows,
   ].join("\n");
 }
+
+// ---------------------------------------------------------------------------
+// GitHub backend — operations
+// ---------------------------------------------------------------------------
+
+/** Run a `gh` invocation and return stdout. Injectable for tests. */
+function realGh(args) {
+  return execFileSync("gh", args, { encoding: "utf8" });
+}
+
+/**
+ * Open child issues of `parent`: open issues whose body's "## Parent" section
+ * references `parent`. Each result carries number, title, labels (string[]),
+ * body, and blockedBy (number[]).
+ */
+export function listChildren(parent, { runGh = realGh } = {}) {
+  const raw = runGh([
+    "issue", "list",
+    "--state", "open",
+    "--limit", "200",
+    "--json", "number,title,labels,body",
+  ]);
+  return JSON.parse(raw)
+    .map((i) => ({
+      number: i.number,
+      title: i.title,
+      labels: (i.labels || []).map((l) => l.name),
+      body: i.body,
+      blockedBy: parseBlockedBy(i.body),
+    }))
+    .filter((i) => extractParentRef(i.body) === Number(parent));
+}
+
+/** An issue's body plus all comments [{id, url, body, author}]. */
+export function getIssue(issue, { runGh = realGh } = {}) {
+  const data = JSON.parse(
+    runGh([
+      "issue", "view", String(issue),
+      "--json", "number,title,body,comments",
+    ]),
+  );
+  return {
+    number: data.number,
+    title: data.title,
+    body: data.body,
+    comments: (data.comments || []).map((c) => ({
+      id: c.id,
+      url: c.url,
+      body: c.body,
+      author: c.author?.login,
+    })),
+  };
+}
+
+/**
+ * Upsert a marker-keyed comment. If a comment carrying the marker already
+ * exists it is edited in place; otherwise a new comment is posted. Returns
+ * "edited" or "created".
+ */
+export function upsertComment(issue, marker, body, { runGh = realGh } = {}) {
+  const fullBody = composeMarkedBody(marker, body);
+  const existing = findMarkedComment(
+    getIssue(issue, { runGh }).comments,
+    marker,
+  );
+  if (existing) {
+    runGh([
+      "api", "--method", "PATCH",
+      `repos/{owner}/{repo}/issues/comments/${commentRestId(existing.url)}`,
+      "-f", `body=${fullBody}`,
+    ]);
+    return "edited";
+  }
+  runGh(["issue", "comment", String(issue), "--body", fullBody]);
+  return "created";
+}
+
+/** The body of an issue's marker-keyed comment, or "" when absent. */
+export function readComment(issue, marker, { runGh = realGh } = {}) {
+  const found = findMarkedComment(getIssue(issue, { runGh }).comments, marker);
+  return found ? found.body : "";
+}
+
+/** Add a label to an issue (a no-op on the tracker if already present). */
+export function addLabel(issue, label, { runGh = realGh } = {}) {
+  runGh(["issue", "edit", String(issue), "--add-label", label]);
+}
+
+/** Open a pull request; returns the PR URL. */
+export function createPr(head, base, title, body, { runGh = realGh } = {}) {
+  return runGh([
+    "pr", "create",
+    "--head", head, "--base", base,
+    "--title", title, "--body", body,
+  ]).trim();
+}
