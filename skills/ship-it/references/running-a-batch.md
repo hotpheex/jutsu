@@ -27,8 +27,11 @@ are the work-set; an **issue** below means one child.
 Process issues strictly sequentially, in dependency order. For each issue:
 
 1. **Cascade-skip check.** If any issue this one is blocked by ended `failed`
-   or `skipped`, mark this issue `skipped`, post an outcome comment saying so,
-   and continue to the next issue.
+   or `skipped`, or is a `hitl` issue (or any other issue outside the AFK
+   work-set that will therefore never be implemented this run), mark this
+   issue `skipped`, post an outcome comment naming the unsatisfiable blocker,
+   and continue to the next issue. Cascade-skipped issues are reported in the
+   PR body alongside the `hitl` issues as work that is still blocked.
 2. **Handoff comment.** If earlier issues produced discoveries affecting this
    issue, `upsert-comment <issue> handoff <file>` with that context before
    dispatching.
