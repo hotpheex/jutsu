@@ -39,8 +39,8 @@ This is the **Record** operation: self-documenting what you learned by doing the
 
 Run before closing any planning, design, or implementation session.
 
-1. **Glossary audit.** Did this session introduce or shift the meaning of any term? Add or update the domain's glossary page.
-2. **Open questions.** Are there `*[uncertain]*` annotations or deferred decisions? Capture them in the domain's open-questions page.
+1. **Glossary audit.** Did this session introduce or shift the meaning of any term? Record it on the domain's `glossary.md` — create that page if the domain does not have one yet.
+2. **Open questions.** Are there `*[uncertain]*` annotations or deferred decisions? Capture them on the domain's `open-questions.md` — create that page if needed.
 3. **Record.** Walk back through the session: any locked decisions, architectural commitments, or non-obvious findings worth persisting? If yes, create or update the relevant topic page.
 4. **Clean as you go.** Did you notice stale or contradictory content while working? Fix what you can confidently identify; flag the rest `*[needs verification]*`.
 5. **Index + log.** Every page touched is reflected in `index.md` (one line per page) and `log.md` (one entry per operation, prefixed `## [YYYY-MM-DD] <op> | <domain>`).

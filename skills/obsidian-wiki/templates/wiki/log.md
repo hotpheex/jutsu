@@ -4,7 +4,7 @@ Append-only chronological record of wiki operations. Most recent entries at the 
 
 Prefix every entry with `## [YYYY-MM-DD] <op> | <domain>` so `grep "^## \[" log.md | tail -10` returns recent activity.
 
-Operation types: `seed`, `ingest`, `record`, `query`, `lint`, `revise`, `prune`.
+Operation types: `seed` (one-time, written by init), then `ingest`, `record`, `query`, `lint` — the four operations of the `obsidian-wiki` skill.
 
 ---
 

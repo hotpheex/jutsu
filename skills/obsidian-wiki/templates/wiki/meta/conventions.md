@@ -21,7 +21,7 @@ wiki/
 └── <domain>/             -- one folder per project or topic
 ```
 
-The folder split is by *domain* — a project or a topic. New domains get new folders; new pages within a domain go alongside their siblings.
+The folder split is by *domain* — a project or a topic. New domains get new folders; new pages within a domain go alongside their siblings. A domain folder may also hold a `glossary.md` (terminology) and an `open-questions.md` (unresolved or deferred decisions) — create them once the domain accumulates terms or open questions.
 
 ## Page format
 
@@ -65,6 +65,7 @@ siblings with `[[other-page]]` or `[[domain/other-page]]`.
 - Lowercase, hyphen-separated. `architecture-overview.md`, not `ArchitectureOverview.md` or `architecture_overview.md`.
 - One topic per file. If a page exceeds ~150 lines, consider splitting.
 - Use descriptive nouns. The page name is the slug used in `[[wikilinks]]`.
+- Domain folders follow the same rule: lowercase, hyphen-separated (`game-client/`, not `GameClient/`).
 
 ## Citations
 
@@ -97,7 +98,7 @@ One vault holds many projects and topics side by side. These rules keep parallel
 
 `index.md` is content-oriented: every wiki page must appear in the index with a one-line description, under its domain's section. Update the index in the **same edit** as the page itself. A stale index is a broken wiki.
 
-`index.md` must stay under ~200 lines so it fits cheaply in any prompt.
+`index.md` must stay under ~200 lines so it fits cheaply in any prompt. If it approaches that limit, tighten one-line descriptions first; only as a last resort give a large domain its own sub-index page that the main index links to.
 
 ## Log discipline
 
@@ -109,6 +110,8 @@ One vault holds many projects and topics side by side. These rules keep parallel
 ## [2026-01-01] lint   | <domain> | 2 orphans, 1 stale claim, 1 flag resolved
 ## [2026-01-01] query  | <domain> | "why X?" → filed as x.md
 ```
+
+The init script writes a one-time `seed` entry; every later entry uses one of the four operations — `ingest`, `record`, `query`, or `lint`.
 
 The prefix lets `grep "^## \[" log.md | tail -10` produce a fast recent-activity view.
 

@@ -13,7 +13,7 @@ Two layouts:
   codebase's git history. Run init with no `WIKI_TARGET`.
 - **In-repo.** The vault lives inside the repo (e.g. `./wiki`). One git
   history, simpler to clone. Run init with `WIKI_TARGET` set to a path inside
-  the repo.
+  the repo; `WIKI_TARGET` resolves relative to the repo root.
 
 If unsure, use the default sibling layout.
 
