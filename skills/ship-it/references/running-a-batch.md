@@ -84,8 +84,26 @@ Phase 3 over whatever landed, so partial work is captured and reviewable.
 
 ## Phase 4 — Notify
 
-Fire the `run-complete` hook. With no augmentation bound there, the run simply
-ends; report the PR URL.
+1. If `discord-notify` is `off`, skip and report the PR URL.
+2. Read `SHIP_IT_DISCORD_WEBHOOK_URL`. If unset or empty, skip silently and
+   report the PR URL.
+3. Extract the PR number from the URL returned by `create-pr` (the last
+   path segment, e.g. `42` from `.../pull/42`).
+4. POST to the webhook:
+
+   ```bash
+   curl -s -o /dev/null -w "%{http_code}" -X POST "$SHIP_IT_DISCORD_WEBHOOK_URL" \
+     -H "Content-Type: application/json" \
+     -d "{\"content\": \"ship-it done — {done} done, {skipped} skipped, {failed} failed — [PR #{number}]({url})\"}"
+   ```
+
+   Substitute `{done}`, `{skipped}`, `{failed}` with the final run counts and
+   `{number}` / `{url}` with the PR number and full URL.
+
+5. If the HTTP status is not 2xx, or `curl` exits non-zero, log a one-line
+   warning (`discord notify failed: <status>`). Never abort the run — the PR
+   is already raised.
+6. Report the PR URL to the user.
 
 ## Subagent contract
 
