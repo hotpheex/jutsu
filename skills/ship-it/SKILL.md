@@ -1,6 +1,6 @@
 ---
 name: ship-it
-description: Use when a parent or epic issue has a backlog of agent-ready child issues that should be implemented autonomously end-to-end — branched, built test-first, reviewed, fixed, and raised as a single pull request — with no human input until the PR is up.
+description: Use when the user wants a whole batch of already-specified issues — an epic's child issues, a milestone, or a set of ready-for-agent tickets — implemented autonomously into a single pull request, with no human input until the PR is up. Also covers resuming an interrupted batch run. Not for a single issue, for reviewing or opening a PR on finished work, for creating or triaging issues, or for autonomous bug-fixing.
 ---
 
 # ship-it
