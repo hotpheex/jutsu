@@ -3,6 +3,7 @@
  * init-wiki — scaffold an Obsidian-backed LLM wiki in a repo.
  *
  *   node scripts/init-wiki.mjs
+ *   WIKI_TARGET=./wiki WIKI_PROJECT=my-app node scripts/init-wiki.mjs
  *
  * Environment variables:
  *   WIKI_TARGET   vault location (default: sibling "../<project>-wiki")
@@ -27,6 +28,9 @@ const VAULT_FILES = [
   ["wiki/log.md", "wiki/log.md"],
 ];
 
+// Every bundled template the script depends on.
+const TEMPLATE_FILES = [...VAULT_FILES.map(([src]) => src), "agent-block.md"];
+
 function substitute(text, vars) {
   return text
     .replace(/\{\{PROJECT\}\}/g, vars.project)
@@ -43,6 +47,18 @@ export function initWiki({ target, project, repoRoot = process.cwd() } = {}) {
     : resolve(repoPath, "..", `${projectName}-wiki`);
   const date = new Date().toISOString().slice(0, 10);
   const vars = { project: projectName, date, repoPath, wikiPath };
+
+  // Preflight: a missing bundled template is a skill packaging defect, not an
+  // operator error. Fail fast and atomically — before any directory or file
+  // is written — so a broken skill never leaves a half-scaffolded vault.
+  for (const rel of TEMPLATE_FILES) {
+    if (!existsSync(join(templatesDir, rel))) {
+      throw new Error(
+        `bundled template missing: ${join(templatesDir, rel)} — ` +
+          "this is a bug in the obsidian-wiki skill, not your environment",
+      );
+    }
+  }
 
   const wikiDir = join(wikiPath, "wiki");
   const metaDir = join(wikiDir, "meta");
@@ -82,7 +98,11 @@ export function initWiki({ target, project, repoRoot = process.cwd() } = {}) {
     vars,
   );
 
-  return { wikiPath, projectName, created, skipped, agentBlock };
+  // Keyed on repoPath (not process.cwd()) so detection tracks the repo being
+  // scaffolded, consistent with how the vault path itself is derived.
+  const isGitRepo = existsSync(join(repoPath, ".git"));
+
+  return { wikiPath, projectName, created, skipped, agentBlock, isGitRepo };
 }
 
 function main() {
@@ -97,9 +117,9 @@ function main() {
     process.exit(1);
   }
 
-  if (!existsSync(join(process.cwd(), ".git"))) {
+  if (!result.isGitRepo) {
     console.warn(
-      "init-wiki: warning — current directory is not a git repository. " +
+      "init-wiki: warning — the repo root is not a git repository. " +
         "The wiki is still valid.",
     );
   }
