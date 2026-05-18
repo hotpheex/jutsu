@@ -162,7 +162,10 @@ skill. An augmentation that is not installed is silently skipped.
   state stays in the tracker; only project knowledge goes to the wiki.
 - `post-issue-complete` → `screenshot-journey`: for an issue with visible UI
   changes, capture a milestone screenshot.
-- `run-complete` → (future Discord notifier): announce the finished PR.
+- `run-complete` → `discord-notify` (inline): post a minimal run summary to
+  Discord if `discord-notify` is `on` and `SHIP_IT_DISCORD_WEBHOOK_URL` is set.
+  Format: `ship-it done — N done, N skipped, N failed — [PR #N](url)`.
+  Failures are non-fatal.
 
 ## The tracker abstraction
 
