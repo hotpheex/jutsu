@@ -105,10 +105,10 @@ configurable. **Augmentation skills** are optional and attach to a hook point.
 | `fix` | role | (the `implementer` binding) | fix loop | required |
 | `obsidian-wiki` | augmentation | `obsidian-wiki` | `post-issue-complete` | on if available |
 | `screenshot-journey` | augmentation | `screenshot-journey` | `post-issue-complete` | on if available |
+| `discord-notify` | inline | — | `run-complete` | on if env set |
 
 To add an augmentation skill later: add a row here and a short section in
-`references/running-a-batch.md`. No backbone changes. The planned Discord
-notifier lands as an augmentation row attached to `run-complete`.
+`references/running-a-batch.md`. No backbone changes.
 
 ## Hook points
 
