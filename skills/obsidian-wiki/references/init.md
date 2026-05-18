@@ -36,7 +36,8 @@ The script:
 
 - Creates `wiki/`, `wiki/meta/`, and a minimal `.obsidian/` so the vault opens
   cleanly in Obsidian.
-- Copies the four templates in, substituting `{{PROJECT}}`, `{{DATE}}`, and
+- Copies the four wiki templates in (`conventions.md`, `update-rule.md`,
+  `index.md`, `log.md`), substituting `{{PROJECT}}`, `{{DATE}}`, and
   `{{REPO_PATH}}`.
 - Is **idempotent** — re-running skips files that already exist and never
   overwrites human edits.
