@@ -1,9 +1,9 @@
 ---
-name: screenshot-journey
+name: ui-journey
 description: Use when a web project (game, site, browser app) should accumulate progressive screenshots at development milestones, when you want a visual changelog or replayable history of how a UI evolved, or when Playwright runs should produce a step-through record of key implementations.
 ---
 
-# Screenshot Journey
+# UI Journey
 
 ## Overview
 
@@ -13,7 +13,9 @@ viewer that lets anyone step through the development journey.
 
 **Core principle:** loose PNG files are just pixels. The *manifest* — label,
 caption, git SHA, ordering — is what makes a journey replayable. Never capture
-a screenshot without recording it in the manifest.
+a screenshot without recording it in the manifest. The manifest *records* a git
+SHA, but the manifest file itself need not live in the code repo — it can live
+in an external docs vault (see "Output location" below).
 
 ## When to Use
 
@@ -38,13 +40,19 @@ present, plus Node built-ins):
 
 To install into a project, see `references/wiring.md`.
 
+**Output location.** The *tooling* above always lives in the repo. The
+*output* — manifest, `shots/`, generated viewer — has a configurable location
+via the `JOURNEY_DIR` env var or the `journeyDir` capture option (default
+`journey/` in the repo). If the project keeps curated artifacts in an external
+docs vault, point `JOURNEY_DIR` there. See `references/wiring.md`.
+
 ## Capturing
 
 Call `captureMilestone` from inside an existing Playwright test, or from a
 standalone capture script:
 
 ```ts
-import { captureMilestone } from "./journey/capture";
+import { captureMilestone } from "../journey/capture";
 
 await captureMilestone(page, "lobby-prematch", {
   caption: "Pre-match lobby, both players connected",
@@ -53,8 +61,8 @@ await captureMilestone(page, "lobby-prematch", {
 });
 ```
 
-Each call waits for a stable frame, screenshots to `journey/shots/`, collects
-git metadata, and appends one manifest entry. Multiple captures may share a
+Each call waits for a stable frame, screenshots into the journey directory's
+`shots/`, collects git metadata, and appends one manifest entry. Multiple captures may share a
 `label` — they are kept and ordered by capture time, which is how a single
 screen's evolution becomes replayable.
 
@@ -101,6 +109,7 @@ adjustable speed. `index.md` is a static gallery for wikis and READMEs.
   through `captureMilestone`, never a raw `page.screenshot`.
 - **No `waitFor` on a canvas/game** — produces half-rendered captures.
 - **Vague captions** ("the screen") — the journey is only as useful as its captions.
-- **Committing `journey/shots/` but not `manifest.json`** — the viewer needs both.
+- **Committing the shots but not `manifest.json`** — the viewer needs both.
 - **Forgetting the manifest is append-only** — re-running a capture spec adds
-  more entries. To start over, delete `journey/manifest.json` and `journey/shots/`.
+  more entries. To start over, delete `manifest.json` and `shots/` from the
+  journey directory (`JOURNEY_DIR`, default `journey/`).

@@ -3,7 +3,7 @@ name: ship-it
 description: Use when the user wants a whole batch of already-specified issues — an epic's child issues, a milestone, or a set of ready-for-agent tickets — implemented autonomously into a single pull request, with no human input until the PR is up. Also covers resuming an interrupted batch run. Not for a single issue, for reviewing or opening a PR on finished work, for creating or triaging issues, or for autonomous bug-fixing.
 ---
 
-# ship-it
+# Ship It
 
 Autonomously implement every agent-ready child of a parent issue: one branch,
 per-issue test-first implementation, two-stage review, fixes, a final
@@ -104,7 +104,7 @@ configurable. **Augmentation skills** are optional and attach to a hook point.
 | `reviewer` | role | `pr-review-toolkit:review-pr` | stage-2 + final review | required |
 | `fix` | role | (the `implementer` binding) | fix loop | required |
 | `obsidian-wiki` | augmentation | `obsidian-wiki` | `post-issue-complete` | on if available |
-| `screenshot-journey` | augmentation | `screenshot-journey` | `post-issue-complete` | on if available |
+| `ui-journey` | augmentation | `ui-journey` | `post-issue-complete` | on if available |
 | `discord-notify` | inline | — | `run-complete` | on (requires `SHIP_IT_DISCORD_WEBHOOK_URL`) |
 
 To add an augmentation skill later: add a row here and a short section in

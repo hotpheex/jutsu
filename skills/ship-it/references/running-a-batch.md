@@ -163,7 +163,7 @@ skill. An augmentation that is not installed is silently skipped.
 - `post-issue-complete` → `obsidian-wiki`: when a genuinely durable *design*
   decision surfaced while implementing the issue, record it in the wiki. Run
   state stays in the tracker; only project knowledge goes to the wiki.
-- `post-issue-complete` → `screenshot-journey`: for an issue with visible UI
+- `post-issue-complete` → `ui-journey`: for an issue with visible UI
   changes, capture a milestone screenshot.
 - `run-complete` → `discord-notify` (inline): post a minimal run summary to
   Discord if `discord-notify` is `on` and `SHIP_IT_DISCORD_WEBHOOK_URL` is set.
