@@ -76,6 +76,14 @@ Phase 3 over whatever landed, so partial work is captured and reviewable.
 
 ## Phase 2 — Final review
 
+0. **Full test suite — the orchestrator runs this, once per batch.** Execute
+   the project's full test suite (e.g. `npm test`) against the work-set
+   branch HEAD. This is the *only* full-suite invocation in the entire run;
+   implementers, reviewers, and fix subagents are forbidden from running it
+   (their templates say so), because eleven independent full-suite runs cost
+   eleven full-suite-durations while one orchestrator run catches the same
+   regressions. If the suite fails, package the failures as findings and
+   dispatch a fix subagent before proceeding to step 1.
 1. Dispatch a `reviewer`-skill subagent over the whole branch diff
    (`<base>...HEAD`).
 2. For remaining Critical/Important findings, dispatch a fix subagent.
@@ -168,6 +176,24 @@ Borrowed from `superpowers:subagent-driven-development`.
   cascade-skip its dependents.
 - **Model selection.** Cheap models for mechanical issues, standard for
   integration work, the most capable for reviews and escalation retries.
+- **Time budget.** The implementer and fix prompts give subagents
+  self-pacing bands (~15 min mechanical, ~45 min standard, ~90 min
+  integration; fixes default to ~30 min). If a subagent reports BLOCKED
+  for budget, decide whether to extend (re-dispatch with fresh context)
+  or treat as escalate-retry. The budget is guidance, not a tripwire —
+  it exists so a stuck subagent surfaces fast rather than chewing wall
+  clock invisibly.
+- **Test discipline.** Subagents run only targeted tests on the file(s) they
+  touched (e.g. `npx vitest run <path>`, `pytest <path>`, `cargo test
+  <module>`), plus fast checks (typecheck, lint, format). They do *not*
+  run the full test suite (e.g. `npm test`, `pytest`, `cargo test`,
+  `go test ./...`), or any individual test known to be slow in the
+  codebase — the orchestrator's Phase 2 step 0 is the single full-suite
+  run for the whole batch. They also never pipe long-running test output
+  through `tail` (e.g. `<test-cmd> 2>&1 | tail -40`): the pipe buffers
+  the whole process output and has hung subagents for an hour waiting on
+  a tail that never drains. Subagent templates encode this; the rule
+  lives here too so that the procedure stays the source of truth.
 - **Single writer.** Only the orchestrator writes tracker comments and the
   run-status. Subagents surface findings in their final report; the
   orchestrator records them. The one carve-out: the `ui-journey` manifest is

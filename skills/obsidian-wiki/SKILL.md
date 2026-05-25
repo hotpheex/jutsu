@@ -52,7 +52,14 @@ The script is idempotent. Then inject the managed agent block — see
   with citations. File non-obvious answers back as pages.
 - **Lint** — periodic deep sweep: contradictions, stale claims, orphan pages,
   missing cross-links, format drift, and outstanding `*[needs verification]*`
-  flags.
+  flags. **When to run:** after every gate close-out (focus on pages whose
+  `last_updated` predates the gate's start date — staleness candidates);
+  before any major reorganization (new domain, new top-level folder, page
+  split/merge); on user request (`/lint`); otherwise every ~10 Record
+  sessions as a baseline cadence. Lint is cheap (read-mostly, no destructive
+  ops); the cost of *not* running it shows up as compounding format drift
+  that then needs a much larger remediation pass. Prefer many small lints to
+  rare large ones.
 
 ## Clean As You Go
 
