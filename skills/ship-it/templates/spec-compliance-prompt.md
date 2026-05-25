@@ -13,6 +13,14 @@ Read the body, the acceptance criteria, and every comment.
 - Is every acceptance criterion met by the diff?
 - Was anything built that the issue did not ask for?
 
+## Read the diff — don't run the work
+
+Spec compliance is purely a question of whether the diff and the criteria
+align — read both. Do **not** run the full test suite (e.g. `npm test`,
+`pytest`, `cargo test`); the implementer ran the targeted tests, and
+the orchestrator runs the full suite once in Phase 2. Heavy commands
+here just duplicate scheduled work.
+
 ## Report back
 
 List each unmet criterion and each unrequested addition, then end with exactly
