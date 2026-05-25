@@ -124,6 +124,10 @@ To add an augmentation skill later: add a row here and a short section in
 At `run-start`, check skill availability:
 
 - An augmentation skill that is not installed is **silently skipped**.
+- An augmentation skill whose required state is corrupted (e.g. `ui-journey`
+  with a missing `manifest.json` next to a non-empty `shots/`) is **skipped
+  for the run and surfaced in the PR body** — see
+  `references/running-a-batch.md` for the full triage.
 - A missing **role** skill is a **hard error** — the run cannot start without
   an implementer and a reviewer.
 - Invocation config can disable augmentations or swap role bindings.

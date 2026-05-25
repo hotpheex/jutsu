@@ -227,6 +227,14 @@ For an external journey, target `$JOURNEY_DIR` instead (e.g.
 `rm -rf ../obsidian/reviews/manifest.json ../obsidian/reviews/shots`). The
 copied helpers and `viewer.html` stay — only the captured data is cleared.
 
+**`manifest.json` and `shots/` must be deleted together.** Deleting one
+without the other produces an orphaned state — manifest entries pointing at
+missing files, or images with no captions/ordering — which the next
+`captureMilestone` will not detect or repair, and which `build-viewer.mjs`
+will happily render with broken refs. If you only need to drop the last few
+captures, edit `manifest.json` (remove those entries) AND delete the
+corresponding files in `shots/`; never one without the other.
+
 ## Output layout
 
 The two parts of a journey can live in two places. **In the repo (tooling —

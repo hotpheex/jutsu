@@ -15,8 +15,17 @@ are the work-set; an **issue** below means one child.
 4. Resolve the work-set branch: a conventional name is `ship-it/<parent>`.
    Check it out if it exists; otherwise create it from the base branch.
 5. Capability detection — for each registry skill, check availability.
-   Missing augmentation skill: drop it, note it. Missing role skill: stop with
-   a hard error.
+   Three distinct failure modes, three distinct responses:
+   - Missing **role** skill (e.g. no `implementer`, no `reviewer`): stop with
+     a hard error. The run cannot start.
+   - Missing **augmentation** skill (the skill itself is not installed): drop
+     it silently, note it in the run plan. The run continues without it.
+   - **Augmentation skill installed but its required state is corrupted**
+     (e.g. `ui-journey` is available but `$JOURNEY_DIR/manifest.json` is
+     missing while `shots/` is non-empty): skip this augmentation for the
+     duration of the run and surface it in the final PR body's Deferred
+     section, so a human can repair the state before the next run. Do not
+     silently regenerate.
 6. Build the run plan: the ordered issue list, each `pending`.
 7. `upsert-comment <parent> run-status <file>` — post the initial run-status
    (render with the ordered list, every issue `pending`).
@@ -74,13 +83,29 @@ Phase 3 over whatever landed, so partial work is captured and reviewable.
 
 ## Phase 3 — Raise PR
 
-`create-pr <branch> <base> <title> <body-file>`. The body contains:
+Push the work-set branch to the remote first — `gh pr create` will otherwise
+prompt for a push target and hang a non-interactive run:
+
+```
+git push -u origin <branch>
+```
+
+Then `create-pr <branch> <base> <title> <body-file>`. The body contains:
 
 - A one-paragraph summary of the batch.
-- **Completed:** each `done` issue with its commit SHA.
+- **Completed:** each `done` issue with its commit SHA, prefixed with a GitHub
+  closing keyword so merging the PR auto-closes the issue — e.g.
+  `- Closes #123 — <title> (`abc1234`)`. Repeat the keyword on every line; one
+  shared keyword does not cascade. Accepted keywords: `close|closes|closed`,
+  `fix|fixes|fixed`, `resolve|resolves|resolved`. Auto-close only fires when
+  the PR targets the repo's default branch, so confirm `<base>` is the default
+  before relying on it; if it is not, still include the keywords (they become
+  no-ops) and note in the summary that issues must be closed manually.
 - **Deferred:** Suggestion-level findings rolled up from outcome comments.
-- **Skipped / failed:** each such issue with the escalation reason.
-- **Pending human work:** the `hitl` children, listed but not implemented.
+- **Skipped / failed:** each such issue with the escalation reason. Do **not**
+  use a closing keyword here — these issues must stay open.
+- **Pending human work:** the `hitl` children, listed but not implemented. Do
+  **not** use a closing keyword here either.
 
 ## Phase 4 — Notify
 
@@ -103,11 +128,16 @@ steps below are its inline execution.
    Substitute `{done}`, `{skipped}`, `{failed}` with the final run counts and
    `{number}` / `{url}` with the PR number and full URL.
 
-5. The command prints only the HTTP status code to stdout. If the status is
-   not 2xx, log `discord notify failed: HTTP <status>`. If `curl` exits
-   non-zero (transport failure — network/DNS/TLS), `%{http_code}` outputs
-   `000`; log `discord notify failed: transport error`. Never abort the run —
-   the PR is already raised.
+5. Decide which error to log from `curl`'s own signals, in this order:
+   - If `curl` exited non-zero, log `discord notify failed: transport error`
+     (network/DNS/TLS — `%{http_code}` will read `000` but the exit code is
+     the authoritative signal, not the printed code).
+   - Else if the HTTP status is not 2xx, log
+     `discord notify failed: HTTP <status>`.
+   - Else success — nothing to log.
+
+   Never abort the run regardless of which branch fires — the PR is already
+   raised.
 6. Report the PR URL to the user.
 
 ## Subagent contract
@@ -140,7 +170,11 @@ Borrowed from `superpowers:subagent-driven-development`.
   integration work, the most capable for reviews and escalation retries.
 - **Single writer.** Only the orchestrator writes tracker comments and the
   run-status. Subagents surface findings in their final report; the
-  orchestrator records them.
+  orchestrator records them. The one carve-out: the `ui-journey` manifest is
+  a *project* artifact, not a tracker artifact — implementer subagents may
+  append to it through `captureMilestone` (and only through
+  `captureMilestone`), since the hook fires inside their workspace. No other
+  subagent write to `manifest.json` or `index.md` is permitted.
 
 ## Resumability
 
@@ -164,7 +198,38 @@ skill. An augmentation that is not installed is silently skipped.
   decision surfaced while implementing the issue, record it in the wiki. Run
   state stays in the tracker; only project knowledge goes to the wiki.
 - `post-issue-complete` → `ui-journey`: for an issue with visible UI
-  changes, capture a milestone screenshot.
+  changes, capture **one** milestone screenshot for *this issue only*.
+  - The implementer subagent calls `captureMilestone` directly (or runs a
+    purpose-built single-test spec), targeting the new state. Do **not** run
+    the project's full journey spec or any pre-existing capture script that
+    walks earlier milestones — the manifest is append-only and a full replay
+    re-captures every prior milestone, polluting the journey (a real run
+    produced 9× duplicates of one label because the orchestrator ran
+    `journey.spec.ts` on every issue).
+  - Decide first whether the issue has user-visible UI changes. Pure logic,
+    refactors, tests, or backend work: skip the hook — do not capture a "no
+    visible change" milestone.
+  - Label convention: `<branch-or-gate-prefix>-<short-slug>` keyed to *this*
+    issue, so a resumed or rerun batch overwrites the entry's *meaning* but
+    does not produce a near-duplicate caption (see `superpowers:ui-journey`
+    for label/caption rules).
+  - **`manifest.json` is the source of truth.** Before firing the hook, check
+    that `$JOURNEY_DIR/manifest.json` exists. If it is missing and `shots/`
+    is non-empty, treat the journey as corrupted: skip the hook, log
+    `ui-journey: manifest missing — skipping until rebuilt`, and surface it
+    in the final PR body's Deferred section. Do not auto-create a fresh
+    manifest beside orphaned shots — that silently reorders history.
+  - **Never hand-edit `index.md` or `manifest.json`.** Captions, labels, and
+    ordering are written *only* by `captureMilestone`. `index.md` is a
+    generated artifact and any manual edit is wiped on the next build (or,
+    if the manifest is lost, becomes the only state — see the corruption
+    above). If a caption is wrong, fix it in the manifest entry, never in
+    `index.md`.
+  - **Rebuild the viewer after each capture.** After `captureMilestone`
+    returns, run `node journey/build-viewer.mjs` (or the project's
+    `npm run journey` equivalent) so `index.md` and `index.html` are
+    regenerated from the manifest. Captures without a rebuild leave the
+    viewer stale and tempt future hand-edits.
 - `run-complete` → `discord-notify` (inline): post a minimal run summary to
   Discord if `discord-notify` is `on` and `SHIP_IT_DISCORD_WEBHOOK_URL` is set.
   Format: `ship-it done — N done, N skipped, N failed — [PR #N](url)`.
