@@ -25,13 +25,13 @@ comment as authoritative.
   autonomously — do not pause for human confirmation.
 - Implement, test only the file(s) you touched, self-review, and commit
   with a descriptive message.
+- As you add or modify tests, **consolidate redundant ones**: if an existing
+  test covers the same behavior as one you're writing, merge or replace it
+  rather than duplicating. Leave the test suite tighter than you found it.
 
 ## Test discipline — please follow
 
-A project-wide test suite is usually large enough that running it more
-than once per batch is a real wall-clock tax. The orchestrator runs it
-once in Phase 2, so duplicating that run here wastes the batch's wall
-clock.
+The orchestrator runs the full test suite once in Phase 2 — don't duplicate it here.
 
 - During iteration, run *only* the test file(s) you're touching (e.g.
   `npx vitest run <path>`, `pytest <path>`, `cargo test <module>`). Fast
@@ -59,10 +59,43 @@ you're holding:
 - **Integration** (touches multiple components, new wiring): ~90
   minutes.
 
-If you find yourself well past your band with no clear path to DONE —
-or your fix/test cycle isn't converging after a few attempts — stop and
-report BLOCKED so the orchestrator can extend or escalate. Better to
+If you find yourself well past your band with no clear path to DONE, stop
+and report BLOCKED so the orchestrator can extend or escalate. Better to
 surface a stuck loop early than to spin invisibly.
+
+## When you're in over your head
+
+It is always OK to stop and say "this is too hard for me." Bad work is worse
+than no work. Stop and report BLOCKED or NEEDS_CONTEXT when:
+
+- The task requires design decisions with multiple valid approaches and no
+  clear signal from the issue.
+- You've been reading file after file trying to understand the system without
+  making progress.
+- Your fix/test cycle isn't converging after a few attempts.
+- You feel uncertain whether your approach is correct.
+
+Describe specifically what you're stuck on and what you've tried. The
+orchestrator can supply more context, re-dispatch with a stronger model, or
+break the task into smaller pieces.
+
+## Before committing — self-review
+
+Review your work before committing. Ask yourself:
+
+**Completeness:** Did I implement every acceptance criterion? Are there edge
+cases I didn't handle?
+
+**Quality:** Are names clear and accurate? Is the code clean and consistent
+with the surrounding codebase?
+
+**Discipline:** Did I avoid building things the issue didn't ask for? Did I
+follow existing patterns rather than introducing new ones?
+
+**Tests:** Do tests verify actual behavior (not just mock behavior)? Did I
+consolidate redundant tests rather than stacking duplicates?
+
+Fix anything you find before reporting.
 
 ## Report back
 

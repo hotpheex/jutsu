@@ -10,8 +10,9 @@ are the work-set; an **issue** below means one child.
 1. `node scripts/tracker.mjs list-children <parent>` — the child issues.
 2. Keep children labelled `ready-for-agent`; set aside `hitl` children for the
    PR body. Children with neither label are also set aside and noted.
-3. Order the AFK children by dependency (the script's `list-children` output
-   carries each issue's `blockedBy`; sort so blockers come first).
+3. Order the **AFK** (agent-facing, `ready-for-agent`) children by dependency
+   (the script's `list-children` output carries each issue's `blockedBy`; sort
+   so blockers come first).
 4. Resolve the work-set branch: a conventional name is `ship-it/<parent>`.
    Check it out if it exists; otherwise create it from the base branch.
 5. Capability detection — for each registry skill, check availability.
@@ -20,12 +21,10 @@ are the work-set; an **issue** below means one child.
      a hard error. The run cannot start.
    - Missing **augmentation** skill (the skill itself is not installed): drop
      it silently, note it in the run plan. The run continues without it.
-   - **Augmentation skill installed but its required state is corrupted**
-     (e.g. `ui-journey` is available but `$JOURNEY_DIR/manifest.json` is
-     missing while `shots/` is non-empty): skip this augmentation for the
-     duration of the run and surface it in the final PR body's Deferred
-     section, so a human can repair the state before the next run. Do not
-     silently regenerate.
+   - **Augmentation skill installed but its required state is corrupted**:
+     skip this augmentation for the duration of the run and surface it in
+     the final PR body's Deferred section, so a human can repair the state
+     before the next run. Do not silently regenerate.
 6. Build the run plan: the ordered issue list, each `pending`.
 7. `upsert-comment <parent> run-status <file>` — post the initial run-status
    (render with the ordered list, every issue `pending`).
@@ -50,13 +49,16 @@ Process issues strictly sequentially, in dependency order. For each issue:
    committed, this issue's review range `SHA_RANGE` is `<recorded-SHA>..HEAD`.
 4. **Handle the status** the implementer reports (see Subagent contract).
 5. **Stage 1 — spec compliance.** Dispatch a subagent from
-   `templates/spec-compliance-prompt.md`. On `FAIL`, go to the fix loop.
+   `templates/spec-compliance-prompt.md`, substituting `{{ISSUE}}`,
+   `{{PARENT_ISSUE}}`, and `{{SHA_RANGE}}`. On `FAIL`, go to the fix loop.
 6. **Stage 2 — code quality.** Only after stage 1 `PASS`: dispatch a subagent
-   from `templates/code-quality-prompt.md`, which runs the `reviewer` skill.
+   from `templates/code-quality-prompt.md`, substituting `{{ISSUE}}`,
+   `{{PARENT_ISSUE}}`, `{{SHA_RANGE}}`, and `{{REVIEWER_SKILL}}`.
 7. **Fix loop.** If stage 1 failed, or stage 2 returned Critical/Important
-   findings: dispatch a fix subagent from `templates/fix-prompt.md`
-   (substitute `{{FIX_SKILL}}` with the `implementer` role-binding skill name,
-   since the `fix` role defaults to it), then re-run stage 1 and stage 2.
+   findings: dispatch a fix subagent from `templates/fix-prompt.md`,
+   substituting `{{BRANCH}}`, `{{ISSUE}}`, `{{FINDINGS}}`, and `{{FIX_SKILL}}`
+   (the `fix` role defaults to the `implementer` binding). Then re-run stage 1
+   and stage 2.
    Repeat until both are clean or the loop fails to converge (no progress
    between iterations) — a non-converging loop is handled like `BLOCKED`.
 8. **post-issue-complete hook.** Fire it (see Hooks).
@@ -150,8 +152,6 @@ steps below are its inline execution.
 
 ## Subagent contract
 
-Borrowed from `superpowers:subagent-driven-development`.
-
 - **Fresh subagent per task. Never run implementers in parallel** — sequential
   only, no shared-branch conflicts.
 - **The implementer must enumerate issue comments.** Its prompt mandates
@@ -192,15 +192,10 @@ Borrowed from `superpowers:subagent-driven-development`.
   run for the whole batch. They also never pipe long-running test output
   through `tail` (e.g. `<test-cmd> 2>&1 | tail -40`): the pipe buffers
   the whole process output and has hung subagents for an hour waiting on
-  a tail that never drains. Subagent templates encode this; the rule
-  lives here too so that the procedure stays the source of truth.
+  a tail that never drains.
 - **Single writer.** Only the orchestrator writes tracker comments and the
   run-status. Subagents surface findings in their final report; the
-  orchestrator records them. The one carve-out: the `ui-journey` manifest is
-  a *project* artifact, not a tracker artifact — implementer subagents may
-  append to it through `captureMilestone` (and only through
-  `captureMilestone`), since the hook fires inside their workspace. No other
-  subagent write to `manifest.json` or `index.md` is permitted.
+  orchestrator records them.
 
 ## Resumability
 
@@ -223,39 +218,6 @@ skill. An augmentation that is not installed is silently skipped.
 - `post-issue-complete` → `obsidian-wiki`: when a genuinely durable *design*
   decision surfaced while implementing the issue, record it in the wiki. Run
   state stays in the tracker; only project knowledge goes to the wiki.
-- `post-issue-complete` → `ui-journey`: for an issue with visible UI
-  changes, capture **one** milestone screenshot for *this issue only*.
-  - The implementer subagent calls `captureMilestone` directly (or runs a
-    purpose-built single-test spec), targeting the new state. Do **not** run
-    the project's full journey spec or any pre-existing capture script that
-    walks earlier milestones — the manifest is append-only and a full replay
-    re-captures every prior milestone, polluting the journey (a real run
-    produced 9× duplicates of one label because the orchestrator ran
-    `journey.spec.ts` on every issue).
-  - Decide first whether the issue has user-visible UI changes. Pure logic,
-    refactors, tests, or backend work: skip the hook — do not capture a "no
-    visible change" milestone.
-  - Label convention: `<branch-or-gate-prefix>-<short-slug>` keyed to *this*
-    issue, so a resumed or rerun batch overwrites the entry's *meaning* but
-    does not produce a near-duplicate caption (see `superpowers:ui-journey`
-    for label/caption rules).
-  - **`manifest.json` is the source of truth.** Before firing the hook, check
-    that `$JOURNEY_DIR/manifest.json` exists. If it is missing and `shots/`
-    is non-empty, treat the journey as corrupted: skip the hook, log
-    `ui-journey: manifest missing — skipping until rebuilt`, and surface it
-    in the final PR body's Deferred section. Do not auto-create a fresh
-    manifest beside orphaned shots — that silently reorders history.
-  - **Never hand-edit `index.md` or `manifest.json`.** Captions, labels, and
-    ordering are written *only* by `captureMilestone`. `index.md` is a
-    generated artifact and any manual edit is wiped on the next build (or,
-    if the manifest is lost, becomes the only state — see the corruption
-    above). If a caption is wrong, fix it in the manifest entry, never in
-    `index.md`.
-  - **Rebuild the viewer after each capture.** After `captureMilestone`
-    returns, run `node journey/build-viewer.mjs` (or the project's
-    `npm run journey` equivalent) so `index.md` and `index.html` are
-    regenerated from the manifest. Captures without a rebuild leave the
-    viewer stale and tempt future hand-edits.
 - `run-complete` → `discord-notify` (inline): post a minimal run summary to
   Discord if `discord-notify` is `on` and `SHIP_IT_DISCORD_WEBHOOK_URL` is set.
   Format: `ship-it done — N done, N skipped, N failed — [PR #N](url)`.

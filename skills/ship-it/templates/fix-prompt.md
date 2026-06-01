@@ -26,8 +26,7 @@ Do **not** run the full test suite (e.g. `npm test`, `pytest`,
 `cargo test`), or any individual test known to be slow in this
 codebase. The orchestrator runs the full suite once in Phase 2 —
 rerunning it on a small fix costs the same wall clock and catches
-nothing the Phase 2 run won't. (A 3-line comment-edit fix once spent
-27 minutes in the full suite; don't repeat that.)
+nothing the Phase 2 run won't.
 
 Do **not** pipe long-running tests through `tail` (e.g.
 `<test-cmd> 2>&1 | tail -40`) — it buffers output and has hung

@@ -104,7 +104,6 @@ configurable. **Augmentation skills** are optional and attach to a hook point.
 | `reviewer` | role | `pr-review-toolkit:review-pr` | stage-2 + final review | required |
 | `fix` | role | (the `implementer` binding) | fix loop | required |
 | `obsidian-wiki` | augmentation | `obsidian-wiki` | `post-issue-complete` | on if available |
-| `ui-journey` | augmentation | `ui-journey` | `post-issue-complete` | on if available |
 | `discord-notify` | inline | — | `run-complete` | on (requires `SHIP_IT_DISCORD_WEBHOOK_URL`) |
 
 To add an augmentation skill later: add a row here and a short section in
@@ -124,9 +123,8 @@ To add an augmentation skill later: add a row here and a short section in
 At `run-start`, check skill availability:
 
 - An augmentation skill that is not installed is **silently skipped**.
-- An augmentation skill whose required state is corrupted (e.g. `ui-journey`
-  with a missing `manifest.json` next to a non-empty `shots/`) is **skipped
-  for the run and surfaced in the PR body** — see
+- An augmentation skill whose required state is corrupted is **skipped for
+  the run and surfaced in the PR body** — see
   `references/running-a-batch.md` for the full triage.
 - A missing **role** skill is a **hard error** — the run cannot start without
   an implementer and a reviewer.
