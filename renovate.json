@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Australia/Melbourne",
+  "schedule": ["* 0-5 * * 1"],
+  "enabledManagers": ["custom.regex"],
+  "gitIgnoredAuthors": ["41898282+github-actions[bot]@users.noreply.github.com"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Pinned third-party skill sources in vendir.yml; bump to branch head",
+      "managerFilePatterns": ["/^vendir\\.yml$/"],
+      "matchStrings": [
+        "ref: (?<currentDigest>[a-f0-9]{40}) # renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) packageName=(?<packageName>\\S+) branch=(?<currentValue>\\S+)"
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["git-refs"],
+      "commitMessageTopic": "vendored skill {{depName}}",
+      "automerge": false
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+name: vendir
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  sync-on-pr:
+    # Materialise a ref bump into vendored content so the PR shows the skill diff.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: carvel-dev/setup-action@v2
+        with:
+          only: vendir
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: vendir sync
+      - name: Commit vendored changes back to the PR branch
+        run: |
+          git add -A vendor vendir.lock.yml
+          git diff --cached --quiet && exit 0
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "vendir sync"
+          git push
+
+  check:
+    runs-on: ubuntu-latest
+    needs: [sync-on-pr]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+      - uses: carvel-dev/setup-action@v2
+        with:
+          only: vendir
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: vendor/ matches vendir.yml
+        run: vendir sync && git add -A && git diff --cached --exit-code
+      - name: every skill dir has a SKILL.md whose frontmatter name matches the dir
+        run: |
+          fail=0
+          for d in skills/*/ vendor/*/ vendor/*/*/; do
+            [ -d "$d" ] || continue
+            [ -f "$d/SKILL.md" ] || continue
+            n=$(sed -n 's/^name: *//p' "$d/SKILL.md" | head -1)
+            [ "$n" = "$(basename "$d")" ] || { echo "$d: frontmatter name '$n' != dir"; fail=1; }
+          done
+          exit $fail
+      - name: link.sh is idempotent
+        run: |
+          export HOME=$(mktemp -d)
+          ./link.sh && ./link.sh
+          find "$HOME" -type l | sort
