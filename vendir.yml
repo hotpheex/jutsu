@@ -1,0 +1,36 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+# Third-party skills, pinned to a commit. `vendir sync` writes vendor/, which is
+# committed. Renovate bumps the SHA on the `ref:` line; the marker comment must
+# stay on that same line. See README.md for the add / bump / remove runbook.
+directories:
+  - path: vendor
+    contents:
+      # mattpocock/skills lays skills out as skills/<category>/<name>, so each
+      # skill is its own entry with newRootPath pointing at the skill directory.
+      # All three share one SHA; Renovate bumps them together in one PR.
+      - path: mattpocock/grill-with-docs
+        git:
+          url: https://github.com/mattpocock/skills
+          ref: 3cca18b368ae95cdbdebbff572ccafa662551015 # renovate: datasource=git-refs depName=mattpocock/skills packageName=https://github.com/mattpocock/skills branch=main
+        includePaths:
+          - skills/engineering/grill-with-docs/**/*
+        newRootPath: skills/engineering/grill-with-docs
+
+      # Called by grill-with-docs.
+      - path: mattpocock/grilling
+        git:
+          url: https://github.com/mattpocock/skills
+          ref: 3cca18b368ae95cdbdebbff572ccafa662551015 # renovate: datasource=git-refs depName=mattpocock/skills packageName=https://github.com/mattpocock/skills branch=main
+        includePaths:
+          - skills/productivity/grilling/**/*
+        newRootPath: skills/productivity/grilling
+
+      # Called by grill-with-docs.
+      - path: mattpocock/domain-modeling
+        git:
+          url: https://github.com/mattpocock/skills
+          ref: 3cca18b368ae95cdbdebbff572ccafa662551015 # renovate: datasource=git-refs depName=mattpocock/skills packageName=https://github.com/mattpocock/skills branch=main
+        includePaths:
+          - skills/engineering/domain-modeling/**/*
+        newRootPath: skills/engineering/domain-modeling
