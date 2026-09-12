@@ -5,10 +5,11 @@ set -eu
 repo=$(cd "$(dirname "$0")" && pwd -P)
 roots="$HOME/.claude/skills $HOME/.agents/skills"
 
-# Candidate skill dirs: own skills, and vendored skills one or two levels deep.
-# A skill is any directory that contains SKILL.md.
+# Candidate skill dirs: own skills, and vendored skills up to three levels deep
+# (vendor/<upstream>/<category>/<skill>). A skill is any directory that
+# contains SKILL.md.
 skills=$(
-  for d in "$repo"/skills/*/ "$repo"/vendor/*/ "$repo"/vendor/*/*/; do
+  for d in "$repo"/skills/*/ "$repo"/vendor/*/ "$repo"/vendor/*/*/ "$repo"/vendor/*/*/*/; do
     [ -f "$d/SKILL.md" ] && printf '%s\n' "${d%/}"
   done
   true
