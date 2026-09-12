@@ -13,7 +13,7 @@ directories:
       - path: mattpocock
         git:
           url: https://github.com/mattpocock/skills
-          ref: 3cca18b368ae95cdbdebbff572ccafa662551015 # renovate: datasource=git-refs depName=mattpocock/skills packageName=https://github.com/mattpocock/skills branch=main
+          ref: 885e2ca4d842d139e9aef4e48d366c63cb1b8013 # renovate: datasource=git-refs depName=mattpocock/skills packageName=https://github.com/mattpocock/skills branch=main
         includePaths:
           - skills/engineering/code-review/**/*
           - skills/engineering/codebase-design/**/*
