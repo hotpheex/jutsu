@@ -1,21 +1,25 @@
 # Global agent instructions
 
-Harness-neutral instructions that apply in every repo and every session.
-Consumers link this file to wherever their harness reads global instructions.
+## wiki
 
-Keep it short and general. Anything specific to one repo belongs in that repo's
-own `AGENTS.md`.
+"wiki" means my Obsidian vault at `$OBSIDIAN_VAULT`. If the variable is unset, ask.
 
-## Design docs live in the Obsidian vault, not in the repo
+Enter through `$OBSIDIAN_VAULT/index.md`, which routes. `wiki/RULES.md` is the
+policy and outranks this file on anything about the vault. Both name the
+locations, so read them rather than guessing a path.
 
-`CONTEXT.md`, `CONTEXT-MAP.md`, and ADRs are never created, edited, staged, or
-committed inside a repository. They live in the Obsidian vault, under
-`$OBSIDIAN_VAULT/Notes/<repo>/` (`~/vault` when the variable is unset):
+Go there to pick up background a repo does not carry, and to reconcile durable
+context once consequential work has changed it.
 
-- glossary: `$OBSIDIAN_VAULT/Notes/<repo>/CONTEXT.md`
-- ADRs: `$OBSIDIAN_VAULT/Notes/<repo>/adr/NNNN-<slug>.md`
+**Docs go to the wiki, not the repo.** Glossaries, ADRs, design docs, and skill
+artifacts are never created, staged, or committed inside a repository. Keep the
+format a skill specifies, change only the location. This overrides any skill
+that says otherwise.
 
-When a skill says to read or write `CONTEXT.md` or `docs/adr/`, use these paths
-instead. Keep the file formats the skill specifies; only the location changes.
-This overrides any skill that says otherwise, including `domain-modeling` and
-`grill-with-docs`.
+## Grilling
+
+Every grill runs `grill-with-docs`, and persists its artifacts to the wiki.
+
+Lead with the one-way doors: the calls only I can make, where the tradeoff is
+real and reversing it is expensive. Settled and reversible details come last,
+or not at all.
