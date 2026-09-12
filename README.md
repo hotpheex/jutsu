@@ -82,9 +82,11 @@ If an upstream skill needs editing, do not patch `vendor/`. Fork it into
 - It then checks `vendor/` matches `vendir.yml`, every skill's frontmatter
   `name` equals its directory, and `link.sh` runs twice cleanly.
 
-Known limitation: the sync commit is pushed with `GITHUB_TOKEN`, which does not
-start a new workflow run, so the status shown on a Renovate PR belongs to the
-pre-sync commit. `check` does check out the branch head after the sync, so the
-result is right, but it is attached to the wrong SHA. Do not make `check` a
-required status check. Swap `GITHUB_TOKEN` for a fine-grained PAT if that ever
-matters.
+Known behaviour on a bumped PR: the `vendir sync` commit is pushed with
+`GITHUB_TOKEN`, so GitHub creates a second workflow run for it but holds it as
+"action required" instead of running it. The first run's `check` job already
+checked out the branch head after the sync, so the result is valid; it is just
+attached to the earlier commit. Approve the held run from the Actions tab if you
+want a green check on the head commit, or ignore it. Do not make `check` a
+required status check. Swap `GITHUB_TOKEN` for a fine-grained PAT with contents
+write if you want the follow-up run to start on its own.
