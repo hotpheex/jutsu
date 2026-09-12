@@ -44,18 +44,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: vendor/ matches vendir.yml
         run: vendir sync && git add -A && git diff --cached --exit-code
-      - name: every skill dir has a SKILL.md whose frontmatter name matches the dir
+      - name: skill names match their directory and are unique
         run: |
           fail=0
+          names=""
           for d in skills/*/ vendor/*/ vendor/*/*/ vendor/*/*/*/; do
-            [ -d "$d" ] || continue
             [ -f "$d/SKILL.md" ] || continue
             n=$(sed -n 's/^name: *//p' "$d/SKILL.md" | head -1)
             [ "$n" = "$(basename "$d")" ] || { echo "$d: frontmatter name '$n' != dir"; fail=1; }
+            names="$names$(basename "$d")
+          "
           done
+          dupes=$(printf '%s' "$names" | sort | uniq -d)
+          [ -z "$dupes" ] || { echo "duplicate skill names: $dupes"; fail=1; }
           exit $fail
-      - name: link.sh is idempotent
-        run: |
-          export HOME=$(mktemp -d)
-          ./link.sh && ./link.sh
-          find "$HOME" -type l | sort

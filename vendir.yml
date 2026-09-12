@@ -6,7 +6,7 @@ kind: Config
 #
 # One entry per upstream. `newRootPath` is the upstream's skills directory, so
 # vendor/<upstream>/ mirrors the upstream layout beneath it and adding a skill
-# is one includePaths line. link.sh finds SKILL.md up to three levels deep.
+# is one includePaths line. Consumers find SKILL.md up to three levels deep.
 directories:
   - path: vendor
     contents:
