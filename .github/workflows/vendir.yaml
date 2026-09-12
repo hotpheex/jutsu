@@ -47,7 +47,7 @@ jobs:
       - name: every skill dir has a SKILL.md whose frontmatter name matches the dir
         run: |
           fail=0
-          for d in skills/*/ vendor/*/ vendor/*/*/; do
+          for d in skills/*/ vendor/*/ vendor/*/*/ vendor/*/*/*/; do
             [ -d "$d" ] || continue
             [ -f "$d/SKILL.md" ] || continue
             n=$(sed -n 's/^name: *//p' "$d/SKILL.md" | head -1)

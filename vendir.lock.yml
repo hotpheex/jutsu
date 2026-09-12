@@ -6,18 +6,11 @@ directories:
       sha: 3cca18b368ae95cdbdebbff572ccafa662551015
       tags:
       - v1.2.3-41-g3cca18b
-    path: mattpocock/grill-with-docs
+    path: mattpocock
   - git:
-      commitTitle: 'Merge pull request #1025 from mattpocock/chore/link-skills-exclude-misc...'
-      sha: 3cca18b368ae95cdbdebbff572ccafa662551015
-      tags:
-      - v1.2.3-41-g3cca18b
-    path: mattpocock/grilling
-  - git:
-      commitTitle: 'Merge pull request #1025 from mattpocock/chore/link-skills-exclude-misc...'
-      sha: 3cca18b368ae95cdbdebbff572ccafa662551015
-      tags:
-      - v1.2.3-41-g3cca18b
-    path: mattpocock/domain-modeling
+      commitTitle: 'Update claude-api skill: Managed Agents `auto` permission policy
+        and `ant beta:sessions connect` (#1750)...'
+      sha: 34040c9c568585f6929bedeaad110ad08f079624
+    path: anthropic
   path: vendor
 kind: LockConfig

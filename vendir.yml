@@ -3,34 +3,43 @@ kind: Config
 # Third-party skills, pinned to a commit. `vendir sync` writes vendor/, which is
 # committed. Renovate bumps the SHA on the `ref:` line; the marker comment must
 # stay on that same line. See README.md for the add / bump / remove runbook.
+#
+# One entry per upstream. `newRootPath` is the upstream's skills directory, so
+# vendor/<upstream>/ mirrors the upstream layout beneath it and adding a skill
+# is one includePaths line. link.sh finds SKILL.md up to three levels deep.
 directories:
   - path: vendor
     contents:
-      # mattpocock/skills lays skills out as skills/<category>/<name>, so each
-      # skill is its own entry with newRootPath pointing at the skill directory.
-      # All three share one SHA; Renovate bumps them together in one PR.
-      - path: mattpocock/grill-with-docs
+      - path: mattpocock
         git:
           url: https://github.com/mattpocock/skills
           ref: 3cca18b368ae95cdbdebbff572ccafa662551015 # renovate: datasource=git-refs depName=mattpocock/skills packageName=https://github.com/mattpocock/skills branch=main
         includePaths:
-          - skills/engineering/grill-with-docs/**/*
-        newRootPath: skills/engineering/grill-with-docs
-
-      # Called by grill-with-docs.
-      - path: mattpocock/grilling
-        git:
-          url: https://github.com/mattpocock/skills
-          ref: 3cca18b368ae95cdbdebbff572ccafa662551015 # renovate: datasource=git-refs depName=mattpocock/skills packageName=https://github.com/mattpocock/skills branch=main
-        includePaths:
-          - skills/productivity/grilling/**/*
-        newRootPath: skills/productivity/grilling
-
-      # Called by grill-with-docs.
-      - path: mattpocock/domain-modeling
-        git:
-          url: https://github.com/mattpocock/skills
-          ref: 3cca18b368ae95cdbdebbff572ccafa662551015 # renovate: datasource=git-refs depName=mattpocock/skills packageName=https://github.com/mattpocock/skills branch=main
-        includePaths:
+          - skills/engineering/code-review/**/*
+          - skills/engineering/codebase-design/**/*
+          - skills/engineering/diagnosing-bugs/**/*
           - skills/engineering/domain-modeling/**/*
-        newRootPath: skills/engineering/domain-modeling
+          - skills/engineering/grill-with-docs/**/*
+          - skills/engineering/implement/**/*
+          - skills/engineering/improve-codebase-architecture/**/*
+          - skills/engineering/research/**/*
+          - skills/engineering/resolving-merge-conflicts/**/*
+          - skills/engineering/tdd/**/*
+          - skills/engineering/to-spec/**/*
+          - skills/engineering/wayfinder/**/*
+          - skills/productivity/grill-me/**/*
+          - skills/productivity/grilling/**/*
+          - skills/productivity/handoff/**/*
+          - skills/productivity/teach/**/*
+          - skills/productivity/to-questionnaire/**/*
+          - skills/productivity/wait-what/**/*
+          - skills/productivity/writing-for-agents/**/*
+        newRootPath: skills
+
+      - path: anthropic
+        git:
+          url: https://github.com/anthropics/skills
+          ref: 34040c9c568585f6929bedeaad110ad08f079624 # renovate: datasource=git-refs depName=anthropics/skills packageName=https://github.com/anthropics/skills branch=main
+        includePaths:
+          - skills/skill-creator/**/*
+        newRootPath: skills

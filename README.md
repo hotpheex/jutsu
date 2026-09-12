@@ -42,8 +42,10 @@ frontmatter, open a PR.
 **Third-party skill:** add a `contents` entry to `vendir.yml` (copy an existing
 one). `ref` must be a 40-char commit SHA, and the `# renovate:` comment must stay
 on the same line. `includePaths` are relative to the upstream root; `newRootPath`
-is the directory whose *children* should land under `vendor/<path>/`, so for a
-single skill it is the skill directory itself. Then:
+is the upstream's skills directory, so `vendor/<path>/` mirrors whatever sits
+below it (a flat `<skill>/` or a `<category>/<skill>/` split; `link.sh` finds
+`SKILL.md` up to three levels under `vendor/`). To add another skill from an
+upstream that is already listed, add one `includePaths` line. Then:
 
 ```sh
 vendir sync          # brew install vendir, or a release from carvel-dev/vendir
