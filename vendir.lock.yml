@@ -2,10 +2,10 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'Merge pull request #911 from mattpocock/fix/907-yaml-frontmatter-colons...'
-      sha: 885e2ca4d842d139e9aef4e48d366c63cb1b8013
+      commitTitle: 'Merge pull request #1120 from mattpocock/release/v1.3...'
+      sha: d81f3a183412e71a5b1e84ca21bc1a35eea03a60
       tags:
-      - v1.2.3-31-g885e2ca
+      - v1.2.3-75-gd81f3a1
     path: mattpocock
   - git:
       commitTitle: 'Update claude-api skill: Managed Agents `auto` permission policy

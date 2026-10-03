@@ -1,5 +1,8 @@
 # Global agent instructions
 
+When an interactive Q&A tool is available, use it for grill sessions and other
+major questions that require my decision.
+
 ## wiki
 
 "wiki" means my Obsidian vault at `$OBSIDIAN_VAULT`. If the variable is unset, ask.
