@@ -26,6 +26,7 @@ directories:
           - skills/engineering/pr/**/*
           - skills/engineering/prototype/**/*
           - skills/engineering/research/**/*
+          - skills/engineering/retro/**/*
           - skills/engineering/setup-matt-pocock-skills/**/*
           - skills/engineering/tdd/**/*
           - skills/engineering/to-spec/**/*
