@@ -5,6 +5,7 @@ Global agent instructions and skills, in one git repo, for every harness I use.
 ```
 AGENTS.md          global instructions, harness-neutral
 skills/<name>/     my own skills, SKILL.md inside
+hooks/             harness hooks, Node scripts with no dependencies
 vendor/            third-party skills, written by `vendir sync`, never hand-edited
 vendir.yml         what to vendor, from where, pinned to a commit SHA
 vendir.lock.yml    written by vendir, committed
@@ -23,6 +24,9 @@ the t3code image does it in its `skills-sync` script.
   (`~/.claude/skills/`, `~/.agents/skills/`).
 - **Instructions** are `AGENTS.md`. Symlink it to wherever the harness reads
   global instructions (`~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`).
+- **Hooks** are `hooks/*.mjs` other than `*.test.mjs`. Each one's header names
+  its event and matcher, and denies by exiting 2 with the reason on stderr,
+  which Claude Code and Codex both honour. Register them by hand once (below).
 - **Updating** is `git pull --ff-only` and re-running the linking. Nothing
   needs installing; vendir only runs on the machine that edits `vendir.yml`
   and in CI.
@@ -30,6 +34,36 @@ the t3code image does it in its `skills-sync` script.
 ```sh
 git clone https://github.com/hotpheex/jutsu ~/.jutsu
 ```
+
+## Register the hooks
+
+`require-pr-skill.mjs` blocks `gh pr create` (and `gh pr edit` with a body)
+unless the body has every heading of the `pr` skill's template, so an agent
+that skipped the skill is told to load it. It reads the headings from the
+vendored skill at runtime, so a Renovate bump that changes them needs no edit
+here.
+
+Add this `PreToolUse` entry to `~/.claude/settings.json` and to
+`~/.codex/hooks.json`, alongside any hooks already there:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node \"$HOME/.jutsu/hooks/require-pr-skill.mjs\"" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Codex skips a hook until you trust it: open `/hooks` in a Codex session and
+trust this one. Trust is pinned to the hook definition, not the script, so
+later pulls do not ask again.
 
 ## Add, bump, or remove a skill
 
@@ -77,6 +111,8 @@ If an upstream skill needs editing, do not patch `vendor/`. Fork it into
   branch. This is what turns a Renovate SHA bump into a content diff.
 - It then checks `vendor/` matches `vendir.yml`, every skill's frontmatter
   `name` equals its directory, and no two skills share a name.
+- It runs the hook tests (`node --test hooks/*.test.mjs`), which also fail if
+  a bump moves or reshapes the `pr` skill the hook reads.
 
 Known behaviour on a bumped PR: the `vendir sync` commit is pushed with
 `GITHUB_TOKEN`, so GitHub creates a second workflow run for it but holds it as

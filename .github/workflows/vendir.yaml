@@ -58,3 +58,5 @@ jobs:
           dupes=$(printf '%s' "$names" | sort | uniq -d)
           [ -z "$dupes" ] || { echo "duplicate skill names: $dupes"; fail=1; }
           exit $fail
+      - name: hook tests
+        run: node --test hooks/*.test.mjs
