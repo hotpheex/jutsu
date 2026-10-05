@@ -26,3 +26,8 @@ Every grill runs `grill-with-docs`, and persists its artifacts to the wiki.
 Lead with the one-way doors: the calls only I can make, where the tradeoff is
 real and reversing it is expensive. Settled and reversible details come last,
 or not at all.
+
+## Pull requests
+
+Write every PR body with the `pr` skill: load it before `gh pr create`, and
+before any `gh pr edit` that rewrites the body.
