@@ -27,6 +27,13 @@ Lead with the one-way doors: the calls only I can make, where the tradeoff is
 real and reversing it is expensive. Settled and reversible details come last,
 or not at all.
 
+## Skills
+
+Skills are installed only from the `~/.jutsu` checkout: merge to jutsu, then
+pull and re-link (`skills-sync` in t3code). Never symlink a skill by hand from
+anywhere else, least of all a worktree; worktrees get deleted and the link
+breaks.
+
 ## Pull requests
 
 Write every PR body with the `pr` skill: load it before `gh pr create`, and
