@@ -49,3 +49,29 @@ directories:
         includePaths:
           - skills/skill-creator/**/*
         newRootPath: skills
+
+      - path: cloudflare
+        git:
+          url: https://github.com/cloudflare/skills
+          ref: 86505e44f87d801aa1864a3c4109e9a8ae5c409f # renovate: datasource=git-refs depName=cloudflare/skills packageName=https://github.com/cloudflare/skills branch=main
+        includePaths:
+          - skills/agents-sdk/**/*
+          - skills/basin/**/*
+          - skills/cf-cli/**/*
+          - skills/cloudflare-email-service/**/*
+          - skills/cloudflare-one-migrations/**/*
+          - skills/cloudflare-one/**/*
+          - skills/cloudflare/**/*
+          - skills/durable-objects/**/*
+          - skills/gateway-workers/**/*
+          - skills/k2/**/*
+          - skills/nextjs-on-cloudflare/**/*
+          - skills/sandbox-migrate-to-next/**/*
+          - skills/sandbox-next/**/*
+          - skills/sandbox-stable/**/*
+          - skills/turnstile-spin/**/*
+          - skills/web-perf/**/*
+          - skills/workers-best-practices/**/*
+          - skills/workers-profiling/**/*
+          - skills/wrangler/**/*
+        newRootPath: skills
