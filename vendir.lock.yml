@@ -12,5 +12,9 @@ directories:
         and `ant beta:sessions connect` (#1750)...'
       sha: 34040c9c568585f6929bedeaad110ad08f079624
     path: anthropic
+  - git:
+      commitTitle: 'Merge pull request #241 from sybeeria/fix-workers-profiling-cf-link...'
+      sha: 86505e44f87d801aa1864a3c4109e9a8ae5c409f
+    path: cloudflare
   path: vendor
 kind: LockConfig
